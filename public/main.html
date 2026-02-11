@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyFileUpload</title>
+<style>
+  :root {
+    --bg: #0a0a0b; --card: #18181b; --border: #27272a; --border2: #1a1a1e;
+    --accent: #7c3aed; --accent2: #a78bfa; --text: #e4e4e7; --muted: #a1a1aa;
+    --dim: #52525b; --dim2: #3f3f46; --success: #4ade80; --error: #f87171;
+    --grad: linear-gradient(90deg, #7c3aed, #a78bfa);
+  }
+  [data-theme="blue"] {
+    --bg: #0a0f1a; --card: #111827; --border: #1f2937; --border2: #1a2030;
+    --accent: #2563eb; --accent2: #60a5fa;
+    --grad: linear-gradient(90deg, #2563eb, #60a5fa);
+  }
+  [data-theme="green"] {
+    --bg: #0a0f0d; --card: #111816; --border: #1a2e22; --border2: #15231a;
+    --accent: #059669; --accent2: #34d399;
+    --grad: linear-gradient(90deg, #059669, #34d399);
+  }
+  [data-theme="light"] {
+    --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --border2: #f1f5f9;
+    --accent: #7c3aed; --accent2: #a78bfa; --text: #1e293b; --muted: #64748b;
+    --dim: #94a3b8; --dim2: #cbd5e1;
+    --grad: linear-gradient(90deg, #7c3aed, #a78bfa);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg); min-height: 100vh; color: var(--text);
+    transition: background 0.3s, color 0.3s;
+  }
+  .header {
+    padding: 20px 32px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border2);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-left svg { width: 26px; height: 26px; color: var(--accent2); }
+  .header-left h1 { font-size: 1.15em; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .stat-badge {
+    display: flex; align-items: center; gap: 6px; padding: 5px 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.78em; color: var(--muted);
+  }
+  .stat-badge svg { width: 13px; height: 13px; }
+
+  .theme-dots { display: flex; gap: 5px; align-items: center; padding: 5px 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; }
+  .theme-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.2s; }
+  .theme-dot:hover, .theme-dot.active { border-color: var(--text); transform: scale(1.15); }
+  .theme-dot[data-t="purple"] { background: #7c3aed; }
+  .theme-dot[data-t="blue"] { background: #2563eb; }
+  .theme-dot[data-t="green"] { background: #059669; }
+  .theme-dot[data-t="light"] { background: #f1f5f9; border: 1px solid #cbd5e1; }
+
+  .hdr-btn {
+    padding: 5px 12px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.78em;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .hdr-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .hdr-btn.logout:hover { border-color: var(--error); color: var(--error); }
+
+  .bento { padding: 24px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    max-width: 1000px; margin: 0 auto; }
+  @media (max-width: 720px) { .bento { grid-template-columns: 1fr; padding: 16px; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; transition: all 0.2s;
+  }
+  .card:hover { border-color: var(--dim2); }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .card-header svg { width: 20px; height: 20px; color: var(--accent2); }
+  .card-header h2 { font-size: 0.95em; font-weight: 500; }
+
+  .upload-card { grid-column: 1 / -1; }
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 14px; padding: 48px 20px;
+    text-align: center; cursor: pointer; transition: all 0.3s;
+    background: color-mix(in srgb, var(--accent) 2%, transparent);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+  .drop-zone svg { width: 40px; height: 40px; color: var(--dim); margin-bottom: 12px; }
+  .drop-zone.dragover svg { color: var(--accent2); }
+  .drop-zone p { color: var(--dim); font-size: 0.9em; margin-top: 8px; }
+  .drop-zone strong { color: var(--accent2); }
+  input[type="file"] { display: none; }
+
+  .progress-list { margin-top: 16px; }
+  .progress-item { display: flex; align-items: center; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border2); }
+  .progress-item:last-child { border-bottom: none; }
+  .progress-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .progress-item svg.pending { color: var(--dim); }
+  .progress-item svg.done { color: var(--success); }
+  .progress-item svg.fail { color: var(--error); }
+  .progress-item .info { flex: 1; min-width: 0; }
+  .progress-item .name { font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress-item .meta { font-size: 0.75em; color: var(--dim); margin-top: 2px; }
+  .pbar { width: 100%; height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .pbar .fill { height: 100%; background: var(--grad); width: 0%; transition: width 0.15s; border-radius: 2px; }
+  .pbar .fill.done { background: var(--success); }
+  .pbar .fill.fail { background: var(--error); }
+
+  .files-card { grid-column: 1 / -1; }
+  .file-row { display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border2); font-size: 0.85em; }
+  .file-row:last-child { border-bottom: none; }
+  .file-row svg { width: 16px; height: 16px; color: var(--dim); flex-shrink: 0; }
+  .file-row .fname { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-row .fsize { color: var(--dim); white-space: nowrap; }
+  .file-row .fdate { color: var(--dim2); white-space: nowrap; font-size: 0.9em; }
+  .file-row .actions button {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 8px; cursor: pointer; color: var(--muted); transition: all 0.2s;
+  }
+  .file-row .actions button:hover { border-color: var(--error); color: var(--error); }
+  .empty-state { text-align: center; padding: 32px; color: var(--dim2); font-size: 0.9em; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .info-grid { grid-template-columns: 1fr; } }
+  .info-item { display: flex; align-items: center; gap: 10px; }
+  .info-item svg { width: 16px; height: 16px; color: var(--dim); }
+  .info-item .label { font-size: 0.8em; color: var(--dim); }
+  .info-item .value { font-size: 0.85em; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <h1>MyFileUpload</h1>
+  </div>
+  <div class="header-right">
+    <div class="stat-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg><span id="diskInfo">-</span></div>
+    <div class="theme-dots">
+      <div class="theme-dot active" data-t="purple" title="Purple"></div>
+      <div class="theme-dot" data-t="blue" title="Blue"></div>
+      <div class="theme-dot" data-t="green" title="Green"></div>
+      <div class="theme-dot" data-t="light" title="Light"></div>
+    </div>
+    <button class="hdr-btn" id="langBtn">中文</button>
+    <button class="hdr-btn logout" id="logoutBtn" data-i="signout">Sign Out</button>
+  </div>
+</div>
+
+<div class="bento">
+  <div class="card upload-card">
+    <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><h2 data-i="upload_title">Upload Files</h2></div>
+    <div class="drop-zone" id="dropZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p><span data-i="drop_text">Drag files here or</span> <strong data-i="drop_browse">click to browse</strong></p>
+      <p style="font-size:0.8em;margin-top:4px;" data-i="drop_limit">Max 5 GB per file</p>
+    </div>
+    <input type="file" id="fileInput" multiple>
+    <div class="progress-list" id="progressList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg><h2 data-i="server_title">Server</h2></div>
+    <div class="info-grid">
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><div><div class="label" data-i="protocol">Protocol</div><div class="value">HTTPS / TLS 1.3</div></div></div>
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><div><div class="label" data-i="transfer">Transfer</div><div class="value" data-i="transfer_val">Stream (zero-buffer)</div></div></div>
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><div><div class="label" data-i="storage">Storage</div><div class="value" id="storageInfo">-</div></div></div>
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div><div class="label" data-i="session_lbl">Session</div><div class="value" data-i="session_val">24h auto-expire</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><h2 data-i="stats_title">Session Stats</h2></div>
+    <div class="info-grid">
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><div><div class="label" data-i="uploaded">Uploaded</div><div class="value" id="uploadCount">0 files</div></div></div>
+      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><div class="label" data-i="total_size">Total Size</div><div class="value" id="uploadSize">0 B</div></div></div>
+    </div>
+  </div>
+
+  <div class="card files-card">
+    <div class="card-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><h2 data-i="files_title">Uploaded Files</h2></div>
+    <div id="filesList"><div class="empty-state" data-i="no_files">No files uploaded yet</div></div>
+  </div>
+</div>
+
+<script>
+const SVG = {
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+};
+
+const I18N = {
+  en: {
+    upload_title: 'Upload Files', drop_text: 'Drag files here or', drop_browse: 'click to browse',
+    drop_limit: 'Max 5 GB per file', server_title: 'Server', protocol: 'Protocol',
+    transfer: 'Transfer', transfer_val: 'Stream (zero-buffer)', storage: 'Storage',
+    session_lbl: 'Session', session_val: '24h auto-expire', stats_title: 'Session Stats',
+    uploaded: 'Uploaded', total_size: 'Total Size', files_title: 'Uploaded Files',
+    no_files: 'No files uploaded yet', signout: 'Sign Out',
+    preparing: 'preparing...', done_in: 'Done in', avg: 'avg', failed: 'Failed',
+    network_error: 'Network error', del_confirm: 'Delete', files_unit: 'files',
+  },
+  zh: {
+    upload_title: '上传文件', drop_text: '拖拽文件到这里 或', drop_browse: '点击选择',
+    drop_limit: '单文件最大 5 GB', server_title: '服务器', protocol: '协议',
+    transfer: '传输方式', transfer_val: '流式传输（零缓冲）', storage: '存储空间',
+    session_lbl: '会话', session_val: '24小时自动过期', stats_title: '本次统计',
+    uploaded: '已上传', total_size: '总大小', files_title: '已上传文件',
+    no_files: '暂无文件', signout: '退出登录',
+    preparing: '准备中...', done_in: '耗时', avg: '均速', failed: '失败',
+    network_error: '网络错误', del_confirm: '删除', files_unit: '个文件',
+  }
+};
+
+let lang = localStorage.getItem('mfu_lang') || 'en';
+let theme = localStorage.getItem('mfu_theme') || 'purple';
+
+function t(key) { return I18N[lang][key] || I18N.en[key] || key; }
+
+function applyTheme(th) {
+  theme = th;
+  document.documentElement.removeAttribute('data-theme');
+  if (th !== 'purple') document.documentElement.setAttribute('data-theme', th);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === th));
+  localStorage.setItem('mfu_theme', th);
+}
+
+function applyLang(l) {
+  lang = l;
+  document.getElementById('langBtn').textContent = l === 'en' ? '中文' : 'EN';
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.dataset.i;
+    if (I18N[l][key]) el.textContent = I18N[l][key];
+  });
+  localStorage.setItem('mfu_lang', l);
+  loadFiles(); // refresh file list with new lang
+}
+
+document.querySelectorAll('.theme-dot').forEach(d => d.addEventListener('click', () => applyTheme(d.dataset.t)));
+document.getElementById('langBtn').addEventListener('click', () => applyLang(lang === 'en' ? 'zh' : 'en'));
+document.getElementById('logoutBtn').addEventListener('click', () => fetch('/api/logout',{method:'POST'}).then(() => location.reload()));
+
+applyTheme(theme);
+applyLang(lang);
+
+// Upload logic
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const progressList = document.getElementById('progressList');
+let uploadCount = 0, uploadSize = 0;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
+
+function fmt(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function handleFiles(files) { for (const f of files) upload(f); }
+
+function upload(file) {
+  const id = 'p' + Date.now() + Math.random().toString(36).slice(2,6);
+  const item = document.createElement('div');
+  item.className = 'progress-item';
+  item.innerHTML = '<span class="pending">' + SVG.clock + '</span>' +
+    '<div class="info"><div class="name">' + file.name + '</div>' +
+    '<div class="meta">' + fmt(file.size) + ' &middot; <span id="speed_' + id + '">' + t('preparing') + '</span></div>' +
+    '<div class="pbar"><div class="fill" id="bar_' + id + '"></div></div></div>';
+  progressList.prepend(item);
+
+  const bar = document.getElementById('bar_' + id);
+  const speedEl = document.getElementById('speed_' + id);
+  const iconWrap = item.querySelector('span');
+  const startTime = Date.now();
+  let lastLoaded = 0, lastTime = startTime;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/upload?name=' + encodeURIComponent(file.name));
+
+  xhr.upload.onprogress = e => {
+    if (!e.lengthComputable) return;
+    const pct = (e.loaded / e.total * 100);
+    bar.style.width = pct.toFixed(1) + '%';
+    const now = Date.now();
+    const dt = (now - lastTime) / 1000;
+    if (dt > 0.3) {
+      const speed = (e.loaded - lastLoaded) / dt;
+      speedEl.textContent = pct.toFixed(0) + '% · ' + fmt(Math.round(speed)) + '/s';
+      lastLoaded = e.loaded; lastTime = now;
+    }
+  };
+
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      bar.classList.add('done'); bar.style.width = '100%';
+      iconWrap.className = 'done'; iconWrap.innerHTML = SVG.check;
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const avgSpeed = fmt(Math.round(file.size / ((Date.now()-startTime)/1000)));
+      speedEl.textContent = t('done_in') + ' ' + elapsed + 's · ' + avgSpeed + '/s ' + t('avg');
+      uploadCount++; uploadSize += file.size;
+      document.getElementById('uploadCount').textContent = uploadCount + ' ' + t('files_unit');
+      document.getElementById('uploadSize').textContent = fmt(uploadSize);
+      loadFiles();
+    } else {
+      bar.classList.add('fail'); iconWrap.className = 'fail'; iconWrap.innerHTML = SVG.error;
+      speedEl.textContent = t('failed') + ': ' + xhr.statusText;
+    }
+  };
+  xhr.onerror = () => {
+    bar.classList.add('fail'); iconWrap.className = 'fail'; iconWrap.innerHTML = SVG.error;
+    speedEl.textContent = t('network_error');
+  };
+  xhr.send(file);
+}
+
+async function loadFiles() {
+  const r = await fetch('/api/files');
+  const files = await r.json();
+  const container = document.getElementById('filesList');
+  if (!files.length) { container.innerHTML = '<div class="empty-state">' + t('no_files') + '</div>'; return; }
+  container.innerHTML = files.map(f =>
+    '<div class="file-row">' + SVG.file +
+    '<div class="fname">' + f.name + '</div>' +
+    '<div class="fsize">' + fmt(f.size) + '</div>' +
+    '<div class="fdate">' + f.date + '</div>' +
+    '<div class="actions"><button onclick="delFile(\'' + encodeURIComponent(f.name) + '\')" title="' + t('del_confirm') + '">' + SVG.trash + '</button></div></div>'
+  ).join('');
+  const totalSize = files.reduce((a, f) => a + f.size, 0);
+  document.getElementById('storageInfo').textContent = files.length + ' ' + t('files_unit') + ' · ' + fmt(totalSize);
+  document.getElementById('diskInfo').textContent = files.length + ' ' + t('files_unit') + ' · ' + fmt(totalSize);
+}
+
+async function delFile(name) {
+  if (!confirm(t('del_confirm') + ' ' + decodeURIComponent(name) + '?')) return;
+  await fetch('/api/files/' + name, { method: 'DELETE' });
+  loadFiles();
+}
+
+loadFiles();
+</script>
+</body>
+</html>

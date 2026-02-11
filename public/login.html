@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyFileUpload - Login</title>
+<style>
+  :root {
+    --bg: #0a0a0b; --card: #18181b; --border: #27272a; --accent: #7c3aed;
+    --accent2: #a78bfa; --text: #e4e4e7; --muted: #71717a; --dim: #52525b;
+    --input-bg: #09090b; --error: #f87171;
+  }
+  [data-theme="blue"] {
+    --bg: #0a0f1a; --card: #111827; --border: #1f2937; --accent: #2563eb;
+    --accent2: #60a5fa; --input-bg: #0a0e1a;
+  }
+  [data-theme="green"] {
+    --bg: #0a0f0d; --card: #111816; --border: #1a2e22; --accent: #059669;
+    --accent2: #34d399; --input-bg: #080e0b;
+  }
+  [data-theme="light"] {
+    --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --accent: #7c3aed;
+    --accent2: #a78bfa; --text: #1e293b; --muted: #64748b; --dim: #94a3b8;
+    --input-bg: #f1f5f9; --error: #ef4444;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg); min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); transition: background 0.3s, color 0.3s;
+  }
+  .login-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 48px 40px; width: 380px; text-align: center;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .logo { width: 48px; height: 48px; color: var(--accent2); margin-bottom: 20px; }
+  h1 { font-size: 1.5em; font-weight: 600; margin-bottom: 8px; }
+  .sub { color: var(--muted); font-size: 0.9em; margin-bottom: 32px; }
+  .input-group { position: relative; margin-bottom: 20px; }
+  .input-group .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--dim); }
+  input[type="password"] {
+    width: 100%; padding: 14px 14px 14px 44px;
+    background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); font-size: 0.95em; outline: none; transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent2); }
+  .submit-btn {
+    width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 12px;
+    color: #fff; font-size: 0.95em; font-weight: 500; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .submit-btn:hover { filter: brightness(1.15); }
+  .submit-btn:active { transform: scale(0.98); }
+  .error { color: var(--error); font-size: 0.85em; margin-top: 12px; display: none; }
+
+  /* Switchers */
+  .switchers {
+    position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 99;
+  }
+  .sw-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--muted); transition: all 0.2s;
+  }
+  .sw-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .sw-btn svg { width: 16px; height: 16px; }
+  .sw-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  .theme-dots { display: flex; gap: 6px; align-items: center; padding: 6px 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  .theme-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: border-color 0.2s; }
+  .theme-dot:hover, .theme-dot.active { border-color: var(--text); }
+  .theme-dot[data-t="purple"] { background: #7c3aed; }
+  .theme-dot[data-t="blue"] { background: #2563eb; }
+  .theme-dot[data-t="green"] { background: #059669; }
+  .theme-dot[data-t="light"] { background: #f8fafc; border: 1px solid #cbd5e1; }
+
+  .lang-btn {
+    padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--muted); cursor: pointer; font-size: 0.8em;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .lang-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="switchers">
+  <div class="theme-dots">
+    <div class="theme-dot active" data-t="purple" title="Purple"></div>
+    <div class="theme-dot" data-t="blue" title="Blue"></div>
+    <div class="theme-dot" data-t="green" title="Green"></div>
+    <div class="theme-dot" data-t="light" title="Light"></div>
+  </div>
+  <button class="lang-btn" id="langBtn">EN</button>
+</div>
+
+<div class="login-card">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+  <h1>MyFileUpload</h1>
+  <p class="sub" data-i="login_sub">Secure file transfer service</p>
+  <form id="loginForm">
+    <div class="input-group">
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <input type="password" id="pwd" data-ph="login_placeholder" placeholder="Enter access password" autofocus>
+    </div>
+    <button type="submit" class="submit-btn" data-i="login_btn">Sign In</button>
+  </form>
+  <p class="error" id="err" data-i="login_error">Incorrect password</p>
+</div>
+
+<script>
+const I18N = {
+  en: {
+    login_sub: 'Secure file transfer service',
+    login_placeholder: 'Enter access password',
+    login_btn: 'Sign In',
+    login_error: 'Incorrect password',
+  },
+  zh: {
+    login_sub: '安全文件传输服务',
+    login_placeholder: '请输入访问密码',
+    login_btn: '登 录',
+    login_error: '密码错误',
+  }
+};
+
+let lang = localStorage.getItem('mfu_lang') || 'en';
+let theme = localStorage.getItem('mfu_theme') || 'purple';
+
+function applyTheme(t) {
+  theme = t;
+  document.documentElement.removeAttribute('data-theme');
+  if (t !== 'purple') document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.t === t);
+  });
+  localStorage.setItem('mfu_theme', t);
+}
+
+function applyLang(l) {
+  lang = l;
+  document.getElementById('langBtn').textContent = l === 'en' ? '中文' : 'EN';
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.dataset.i;
+    if (I18N[l][key]) el.textContent = I18N[l][key];
+  });
+  document.querySelectorAll('[data-ph]').forEach(el => {
+    const key = el.dataset.ph;
+    if (I18N[l][key]) el.placeholder = I18N[l][key];
+  });
+  localStorage.setItem('mfu_lang', l);
+}
+
+document.querySelectorAll('.theme-dot').forEach(d => {
+  d.addEventListener('click', () => applyTheme(d.dataset.t));
+});
+
+document.getElementById('langBtn').addEventListener('click', () => {
+  applyLang(lang === 'en' ? 'zh' : 'en');
+});
+
+applyTheme(theme);
+applyLang(lang);
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pwd = document.getElementById('pwd').value;
+  const r = await fetch('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pwd})
+  });
+  if (r.ok) { location.reload(); }
+  else { document.getElementById('err').style.display = 'block'; }
+});
+</script>
+</body>
+</html>
