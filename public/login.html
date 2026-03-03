@@ -23,55 +23,119 @@
     --accent2: #a78bfa; --text: #1e293b; --muted: #64748b; --dim: #94a3b8;
     --input-bg: #f1f5f9; --error: #ef4444;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; overflow-x: hidden; }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: var(--bg); min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text); transition: background 0.3s, color 0.3s;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 88px 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, color 0.3s;
   }
+
+  body > * { min-width: 0; }
+
   .login-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-    padding: 48px 40px; width: 380px; text-align: center;
+    width: 100%;
+    max-width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 18px;
+    text-align: center;
     transition: background 0.3s, border-color 0.3s;
+    overflow: hidden;
   }
-  .logo { width: 48px; height: 48px; color: var(--accent2); margin-bottom: 20px; }
-  h1 { font-size: 1.5em; font-weight: 600; margin-bottom: 8px; }
-  .sub { color: var(--muted); font-size: 0.9em; margin-bottom: 32px; }
-  .input-group { position: relative; margin-bottom: 20px; }
-  .input-group .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--dim); }
-  input[type="password"] {
-    width: 100%; padding: 14px 14px 14px 44px;
-    background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px;
-    color: var(--text); font-size: 0.95em; outline: none; transition: border-color 0.2s;
+
+  .logo { width: 44px; height: 44px; color: var(--accent2); margin: 0 auto 16px; }
+  h1 { font-size: 1.35em; font-weight: 600; margin-bottom: 8px; }
+  .sub { color: var(--muted); font-size: 0.9em; margin-bottom: 24px; }
+
+  .input-group { position: relative; margin-bottom: 14px; }
+  .input-group .icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--dim);
   }
-  input:focus { border-color: var(--accent2); }
+
+  input[type="password"],
   .submit-btn {
-    width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 12px;
-    color: #fff; font-size: 0.95em; font-weight: 500; cursor: pointer;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 0.95em;
+  }
+
+  input[type="password"] {
+    padding: 12px 14px 12px 44px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus { border-color: var(--accent2); }
+
+  .submit-btn {
+    padding: 10px 14px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
     transition: background 0.2s, transform 0.1s;
   }
+
   .submit-btn:hover { filter: brightness(1.15); }
   .submit-btn:active { transform: scale(0.98); }
   .error { color: var(--error); font-size: 0.85em; margin-top: 12px; display: none; }
 
-  /* Switchers */
   .switchers {
-    position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 99;
+    position: fixed;
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    z-index: 99;
+    overflow: hidden;
   }
-  .sw-btn {
-    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--card); cursor: pointer; display: flex; align-items: center;
-    justify-content: center; color: var(--muted); transition: all 0.2s;
-  }
-  .sw-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-  .sw-btn svg { width: 16px; height: 16px; }
-  .sw-btn.active { border-color: var(--accent); color: var(--accent); }
 
-  .theme-dots { display: flex; gap: 6px; align-items: center; padding: 6px 10px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
-  .theme-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
-    border: 2px solid transparent; transition: border-color 0.2s; }
+  .theme-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .theme-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+  }
+
   .theme-dot:hover, .theme-dot.active { border-color: var(--text); }
   .theme-dot[data-t="purple"] { background: #7c3aed; }
   .theme-dot[data-t="blue"] { background: #2563eb; }
@@ -79,12 +143,54 @@
   .theme-dot[data-t="light"] { background: #f8fafc; border: 1px solid #cbd5e1; }
 
   .lang-btn {
-    padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--card); color: var(--muted); cursor: pointer; font-size: 0.8em;
-    font-weight: 500; transition: all 0.2s;
+    min-height: 36px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: 500;
+    transition: all 0.2s;
+    flex-shrink: 0;
   }
+
   .lang-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-</style>
+
+  /* Breakpoints */
+  @media (min-width: 480px) {
+    body { padding: 84px 20px 24px; }
+    .login-card {
+      max-width: 420px;
+      border-radius: 18px;
+      padding: 36px 28px;
+    }
+    .switchers {
+      left: auto;
+      right: 20px;
+      width: auto;
+      justify-content: flex-end;
+    }
+    .theme-dots { padding: 6px 10px; }
+  }
+
+  @media (min-width: 768px) {
+    body { padding: 24px; }
+    .login-card {
+      max-width: 420px;
+      border-radius: 20px;
+      padding: 44px 36px;
+    }
+    .switchers {
+      top: 20px;
+      right: 20px;
+      left: auto;
+    }
+  }
+
+  button:focus-visible, input:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25); }
+  </style>
 </head>
 <body>
 
