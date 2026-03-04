@@ -37,6 +37,8 @@
     min-height: 100vh;
     color: var(--text);
     transition: background 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body * { min-width: 0; }
@@ -289,6 +291,44 @@
   }
 
   button:focus-visible, input:focus-visible, .card:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25); }
+
+  /* ===== Global Toast ===== */
+  .mfu-toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120%);
+    padding: 10px 22px; border-radius: 10px; font-size: 0.85em; font-weight: 500;
+    z-index: 9999; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25); max-width: 90vw; text-align: center;
+  }
+  .mfu-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .mfu-toast.success { background: #065f46; color: #d1fae5; }
+  .mfu-toast.error { background: #991b1b; color: #fecaca; }
+  .mfu-toast.info { background: #1e40af; color: #bfdbfe; }
+  [data-theme="light"] .mfu-toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  [data-theme="light"] .mfu-toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  [data-theme="light"] .mfu-toast.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+  /* ===== Confirm Modal ===== */
+  .mfu-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .mfu-modal-overlay.show { display: flex; }
+  .mfu-modal {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px; max-width: 380px; width: 100%; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .mfu-modal h3 { font-size: 1em; margin-bottom: 8px; }
+  .mfu-modal p { font-size: 0.85em; color: var(--muted); margin-bottom: 20px; word-break: break-word; }
+  .mfu-modal-actions { display: flex; gap: 10px; justify-content: center; }
+  .mfu-modal-actions button {
+    padding: 8px 20px; border-radius: 8px; font-size: 0.85em; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); transition: all 0.2s;
+  }
+  .mfu-modal-actions .modal-cancel { background: var(--card); color: var(--text); }
+  .mfu-modal-actions .modal-cancel:hover { border-color: var(--accent2); }
+  .mfu-modal-actions .modal-danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .mfu-modal-actions .modal-danger:hover { background: #b91c1c; }
   </style>
 </head>
 <body>
@@ -347,7 +387,49 @@
   </div>
 </div>
 
+<div class="mfu-toast" id="mfuToast"></div>
+<div class="mfu-modal-overlay" id="mfuModalOverlay">
+  <div class="mfu-modal">
+    <h3 id="mfuModalTitle">确认操作</h3>
+    <p id="mfuModalMsg"></p>
+    <div class="mfu-modal-actions">
+      <button class="modal-cancel" id="mfuModalCancel">取消</button>
+      <button class="modal-danger" id="mfuModalConfirm">确认</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ===== Toast =====
+let _toastTimer = null;
+function showToast(msg, type = 'info', ms = 3000) {
+  const t = document.getElementById('mfuToast');
+  t.textContent = msg; t.className = 'mfu-toast ' + type;
+  clearTimeout(_toastTimer);
+  requestAnimationFrame(() => t.classList.add('show'));
+  _toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// ===== Confirm Modal =====
+let _modalResolve = null;
+function showModal(title, msg) {
+  return new Promise(resolve => {
+    _modalResolve = resolve;
+    document.getElementById('mfuModalTitle').textContent = title;
+    document.getElementById('mfuModalMsg').textContent = msg;
+    document.getElementById('mfuModalOverlay').classList.add('show');
+    document.getElementById('mfuModalCancel').focus();
+  });
+}
+document.getElementById('mfuModalCancel').addEventListener('click', () => {
+  document.getElementById('mfuModalOverlay').classList.remove('show');
+  if (_modalResolve) { _modalResolve(false); _modalResolve = null; }
+});
+document.getElementById('mfuModalConfirm').addEventListener('click', () => {
+  document.getElementById('mfuModalOverlay').classList.remove('show');
+  if (_modalResolve) { _modalResolve(true); _modalResolve = null; }
+});
+
 const SVG = {
   clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
@@ -405,7 +487,13 @@ function applyLang(l) {
 
 document.querySelectorAll('.theme-dot').forEach(d => d.addEventListener('click', () => applyTheme(d.dataset.t)));
 document.getElementById('langBtn').addEventListener('click', () => applyLang(lang === 'en' ? 'zh' : 'en'));
-document.getElementById('logoutBtn').addEventListener('click', () => fetch('/api/logout',{method:'POST'}).then(() => location.reload()));
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  const ok = await showModal('退出登录', '确定要退出当前会话吗？');
+  if (!ok) return;
+  await fetch('/api/logout', { method: 'POST' });
+  showToast('已退出', 'info');
+  setTimeout(() => location.reload(), 500);
+});
 
 applyTheme(theme);
 applyLang(lang);
@@ -473,15 +561,18 @@ function upload(file) {
       uploadCount++; uploadSize += file.size;
       document.getElementById('uploadCount').textContent = uploadCount + ' ' + t('files_unit');
       document.getElementById('uploadSize').textContent = fmt(uploadSize);
+      showToast('✓ ' + file.name + ' ' + t('done_in') + ' ' + elapsed + 's', 'success');
       loadFiles();
     } else {
       bar.classList.add('fail'); iconWrap.className = 'fail'; iconWrap.innerHTML = SVG.error;
       speedEl.textContent = t('failed') + ': ' + xhr.statusText;
+      showToast('✗ ' + file.name + ' ' + t('failed'), 'error');
     }
   };
   xhr.onerror = () => {
     bar.classList.add('fail'); iconWrap.className = 'fail'; iconWrap.innerHTML = SVG.error;
     speedEl.textContent = t('network_error');
+    showToast('✗ ' + file.name + ' ' + t('network_error'), 'error');
   };
   xhr.send(file);
 }
@@ -504,8 +595,19 @@ async function loadFiles() {
 }
 
 async function delFile(name) {
-  if (!confirm(t('del_confirm') + ' ' + decodeURIComponent(name) + '?')) return;
-  await fetch('/api/files/' + name, { method: 'DELETE' });
+  const decoded = decodeURIComponent(name);
+  const ok = await showModal('⚠️ ' + t('del_confirm'), t('del_confirm') + ' ' + decoded + '?\n此操作不可撤销。');
+  if (!ok) return;
+  try {
+    const resp = await fetch('/api/files/' + name, { method: 'DELETE' });
+    if (resp.ok) {
+      showToast('✓ ' + decoded + ' 已删除', 'success');
+    } else {
+      showToast('✗ 删除失败: ' + resp.statusText, 'error');
+    }
+  } catch (e) {
+    showToast('✗ ' + t('network_error'), 'error');
+  }
   loadFiles();
 }
 
